@@ -4,20 +4,8 @@ A practical, production-minded serverless pipeline that turns raw uploads into o
 
 ## Architecture
 
-```mermaid
-graph TD
-    User([User]) -->|Upload Image| S3Upload[S3 Upload Bucket]
-    S3Upload -->|ObjectCreated Event| TriggerLambda[Trigger Lambda]
-    TriggerLambda -->|Send Message| SQS[SQS Queue]
-    SQS -->|Trigger| ProcessLambda[Processing Lambda]
-    ProcessLambda -->|Fetch Image| S3Upload
-    ProcessLambda -->|Process (Sharp)| ProcessLambda
-    ProcessLambda -->|Save Processed (3 sizes)| S3Processed[S3 Processed Bucket]
-    ProcessLambda -->|Save Metadata| DynamoDB[DynamoDB]
-    ProcessLambda -->|Error| DLQ[Dead Letter Queue]
-    CloudFront[CloudFront CDN] -->|Origin| S3Processed
-    User -->|View Image| CloudFront
-```
+<img width="4198" height="4435" alt="S3 Image Upload Pipeline-2026-02-08-045714" src="https://github.com/user-attachments/assets/b2c6ecda-1448-4580-802c-d48af63a3cee" />
+
 
 **AWS Services (what they do here):**
 - **S3**: Raw uploads and processed outputs. Lifecycle policies can move older assets to cheaper storage.
