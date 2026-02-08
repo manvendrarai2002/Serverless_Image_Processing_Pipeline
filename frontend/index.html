@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serverless Image Processor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    .neo-grid {
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.12) 1px, transparent 0);
+      background-size: 28px 28px;
+    }
+    .glass {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+    .neo-ring {
+      box-shadow:
+        0 0 0 1px rgba(94, 234, 212, 0.15),
+        0 0 40px rgba(56, 189, 248, 0.25),
+        inset 0 0 0 1px rgba(59, 130, 246, 0.25);
+    }
+    .glow {
+      box-shadow: 0 0 32px rgba(59, 130, 246, 0.55);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-slate-100 bg-slate-950">
+  <div class="min-h-screen w-full neo-grid bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4 py-10">
+    <div class="glass neo-ring p-8 md:p-10 rounded-2xl max-w-3xl w-full">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <p class="text-xs uppercase tracking-[0.2em] text-cyan-300">Serverless pipeline</p>
+          <h1 class="text-3xl md:text-4xl font-extrabold mt-2 text-white">Image Processor</h1>
+          <p class="text-sm text-slate-300 mt-2">Event‑driven • Resilient • Global delivery</p>
+        </div>
+        <div class="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-slate-800/60 px-3 py-2 rounded-full border border-slate-700">
+          <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Live demo mode
+        </div>
+      </div>
+    
+      <div class="mb-6 space-y-2">
+        <label class="block text-sm font-medium text-slate-200">
+          Upload images
+        </label>
+        <div class="relative border-2 border-dashed border-slate-600/60 rounded-xl p-6 hover:border-cyan-400/80 transition-colors cursor-pointer group bg-slate-900/50">
+          <input 
+            type="file" 
+            id="fileInput" 
+            accept="image/*" 
+            multiple
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <div class="text-center">
+              <svg class="mx-auto h-12 w-12 text-slate-400 group-hover:text-cyan-300 transition-colors" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <p class="mt-1 text-sm text-slate-200">Click to upload or drag and drop</p>
+              <p class="mt-1 text-xs text-slate-400">JPG, PNG up to 10MB</p>
+          </div>
+        </div>
+      </div>
+    
+      <button 
+        onclick="uploadImages()" 
+        class="w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-cyan-500/30 transition-all transform hover:-translate-y-0.5 glow"
+      >
+        Process images
+      </button>
+    
+      <div id="status" class="mt-6 text-center text-sm font-medium h-6"></div>
+      
+      <div id="results" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const CLOUDFRONT_URL = 'https://d1234abcd.cloudfront.net'; 
+    // In a real app, we'd get a presigned URL. For demo, we simulate the 'upload' success.
+    
+    async function uploadImages() {
+      const files = document.getElementById('fileInput').files;
+      const status = document.getElementById('status');
+      const results = document.getElementById('results');
+      
+      if (!files.length) {
+        status.innerHTML = '<span class="text-rose-400">Please select images first</span>';
+        return;
+      }
+      
+      status.innerHTML = '<span class="text-cyan-300 animate-pulse">Uploading and processing...</span>';
+      results.innerHTML = '';
+      
+      try {
+        for (const file of files) {
+          // Simulate S3 Upload
+          await new Promise(r => setTimeout(r, 800)); 
+          console.log(`Uploaded ${file.name}`);
+
+          // Simulate Processing Wait
+          await new Promise(r => setTimeout(r, 1500));
+          
+          displayResults(file.name);
+        }
+        
+        status.innerHTML = '<span class="text-emerald-300">✨ All images processed successfully!</span>';
+      } catch (error) {
+        status.innerHTML = `<span class="text-rose-400">Error: ${error.message}</span>`;
+      }
+    }
+    
+    function displayResults(fileName) {
+      const results = document.getElementById('results');
+      const baseName = fileName.replace(/\.[^/.]+$/, '');
+      const sizes = ['thumbnail', 'medium', 'large'];
+      
+      sizes.forEach(size => {
+        const container = document.createElement('div');
+        container.className = 'bg-slate-900/70 p-3 rounded-xl border border-slate-700/70 shadow-lg hover:border-cyan-400/60 transition-colors';
+        
+        // Using placeholder images for the demo since we don't have a real running CloudFront/S3 here
+        // In real deployment: src = `${CLOUDFRONT_URL}/${baseName}-${size}.jpg`
+        const imgSrc = size === 'thumbnail' ? 'https://via.placeholder.com/150' : 
+                       size === 'medium' ? 'https://via.placeholder.com/300' : 'https://via.placeholder.com/600';
+
+        container.innerHTML = `
+          <div class="w-full aspect-video mb-2 bg-slate-800 rounded-lg overflow-hidden">
+             <img src="${imgSrc}" class="object-cover w-full h-full" alt="${size}" />
+          </div>
+          <p class="text-xs font-semibold text-slate-200 uppercase tracking-[0.2em] text-center">${size}</p>
+        `;
+        
+        results.appendChild(container);
+      });
+    }
+  </script>
+</body>
+</html>

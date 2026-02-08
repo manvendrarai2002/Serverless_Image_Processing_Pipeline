@@ -1,0 +1,23 @@
+{
+  "name": "severless_image_processing_pipeline",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1693.0",
+    "k6": "^0.0.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "serverless": "^4.31.2",
+    "serverless-offline": "^14.4.0",
+    "serverless-offline-sqs": "^8.0.0",
+    "serverless-s3-local": "^0.8.5"
+  }
+}
