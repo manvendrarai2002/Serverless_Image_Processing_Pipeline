@@ -1,5 +1,7 @@
 service: serverless-image-processing
 
+frameworkVersion: '3.40.0'
+
 provider:
   name: aws
   runtime: nodejs20.x
