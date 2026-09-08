@@ -1,14 +1,13 @@
 {
-  "name": "severless_image_processing_pipeline",
+  "name": "serverless-image-processing-pipeline",
   "version": "1.0.0",
+  "private": true,
+  "description": "Event-driven AWS image processing pipeline using S3, Lambda, SQS and DynamoDB",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "validate": "serverless print --stage ci",
+    "test": "npm run validate"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "aws-sdk": "^2.1693.0",
     "k6": "^0.0.0",
