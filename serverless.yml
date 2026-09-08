@@ -5,12 +5,15 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
-  region: us-east-1
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
   environment:
     UPLOAD_BUCKET: ${self:custom.uploadBucket}
     PROCESSED_BUCKET: ${self:custom.processedBucket}
-    SQS_QUEUE_URL: { Ref: ImageProcessingQueue }
-    DLQ_URL: { Ref: ImageProcessingDLQ }
+    SQS_QUEUE_URL:
+      Ref: ImageProcessingQueue
+    DLQ_URL:
+      Ref: ImageProcessingDLQ
     DYNAMODB_TABLE: ${self:custom.dynamoTable}
   iamRoleStatements:
     - Effect: Allow
@@ -28,15 +31,15 @@ provider:
         - sqs:DeleteMessage
         - sqs:GetQueueAttributes
       Resource:
-        - Fn::GetAtt: [ ImageProcessingQueue, Arn ]
-        - Fn::GetAtt: [ ImageProcessingDLQ, Arn ]
+        - Fn::GetAtt: [ImageProcessingQueue, Arn]
+        - Fn::GetAtt: [ImageProcessingDLQ, Arn]
     - Effect: Allow
       Action:
         - dynamodb:PutItem
         - dynamodb:GetItem
         - dynamodb:UpdateItem
       Resource:
-        - Fn::GetAtt: [ ImageMetadataTable, Arn ]
+        - Fn::GetAtt: [ImageMetadataTable, Arn]
 
 custom:
   uploadBucket: image-uploads-${sls:stage}
@@ -68,14 +71,10 @@ functions:
     events:
       - sqs:
           arn:
-            Fn::GetAtt:
-              - ImageProcessingQueue
-              - Arn
+            Fn::GetAtt: [ImageProcessingQueue, Arn]
           batchSize: 1
     onError:
-      Fn::GetAtt:
-        - ImageProcessingDLQ
-        - Arn
+      Fn::GetAtt: [ImageProcessingDLQ, Arn]
 
 resources:
   Resources:
@@ -84,53 +83,30 @@ resources:
       Properties:
         QueueName: image-processing-queue-${sls:stage}
         VisibilityTimeout: 60
+        SqsManagedSseEnabled: true
         RedrivePolicy:
           deadLetterTargetArn:
-            Fn::GetAtt:
-              - ImageProcessingDLQ
-              - Arn
+            Fn::GetAtt: [ImageProcessingDLQ, Arn]
           maxReceiveCount: 3
 
     ImageProcessingDLQ:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: image-processing-dlq-${sls:stage}
-        MessageRetentionPeriod: 1209600 # 14 days
+        MessageRetentionPeriod: 1209600
+        SqsManagedSseEnabled: true
 
     ImageMetadataTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: ${self:custom.dynamoTable}
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: imageId
             AttributeType: S
         KeySchema:
           - AttributeName: imageId
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-
-    ProcessedBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref S3BucketImageprocessedslsstage
-        PolicyDocument:
-          Statement:
-            - Action:
-                - s3:GetObject
-              Effect: Allow
-              Resource: arn:aws:s3:::${self:custom.processedBucket}/*
-              Principal: "*"
-
-    # Lifecycle Configuration is applied via s3-bucket-lifecycle-configuration plugin or direct CloudFormation
-    # Serverless Framework s3 event definition creates the bucket, but configuring lifecycle properly often requires explicit resource definition or plugin.
-    # For simplicity in this demo, we assume the bucket is created by the event, but we can override it here to add lifecycle.
-    
-  Outputs:
-    CloudFrontUrl:
-      Description: "CloudFront URL (Simulated)"
-      Value: "https://d1234abcd.cloudfront.net"
 
 plugins:
   - serverless-offline
