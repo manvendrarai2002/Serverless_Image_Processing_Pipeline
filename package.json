@@ -14,7 +14,7 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "serverless": "^4.31.2",
+    "serverless": "3.40.0",
     "serverless-offline": "^14.4.0",
     "serverless-offline-sqs": "^8.0.0",
     "serverless-s3-local": "^0.8.5"
